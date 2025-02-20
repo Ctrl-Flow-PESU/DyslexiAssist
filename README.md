@@ -1,4 +1,4 @@
-# AI For Dyslexia
+# DyslexiAssist: AI For Dyslexia
 
 ## Overview
 AI For Dyslexia is an AI-powered tool designed to assist individuals with dyslexia by improving text readability, correcting letter reversals, enhancing word recognition, and providing adaptive reading support. This project leverages machine learning, OpenCV, and AI-driven text processing to make reading more accessible and comfortable for dyslexic users.
