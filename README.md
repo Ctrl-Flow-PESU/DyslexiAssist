@@ -43,7 +43,7 @@ Ensure you have the following installed:
 - The adaptive contrast testing system helps refine readability dynamically.
 
 ## Contributors
-- **Rithvik A M**: https://github.com/Rithvik2006
+- **[Rithvik A M](https://github.com/Rithvik2006)**
 - **Chatresh Ramasai Gudi**: https://github.com/ChatreshGudi
 - **Arvind Kothamangala**: https://github.com/Nightly1177
 - **Aamer Khan**
