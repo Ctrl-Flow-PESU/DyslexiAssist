@@ -26,7 +26,8 @@ WHITE = (255, 255, 255)             # White
 
 def dictate_text_to_student(text, speed):
     """
-    Uses Gemini API to process the text for better pronunciation and then uses TTS to read it.
+    Uses Gemini API to process the text for better pronunciation and then uses TTS to read it. Any other APIs can be used, Gemini was found to give more accurate
+    solutions in this situation.
     """
     try:        
         engine = TextReader
