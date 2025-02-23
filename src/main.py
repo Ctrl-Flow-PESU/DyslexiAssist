@@ -50,7 +50,7 @@ def check_accuracy(user_input, expected_text):
     
     try:
         # Configure the Gemini API
-        genai.configure(api_key="AIzaSyA1VgJaj0VW6E9tV5cITXGxmBRUPDLEddc")
+        genai.configure(api_key="YOUR API KEY HERE")
 
         # Set up the model
         model = genai.GenerativeModel('gemini-pro')
@@ -133,7 +133,7 @@ def draw_back_button(screen, button_font, button_width, button_height):
                 button_color, text_color, border_radius=5)
     return back_button  # Return the rect for click detection
 
-genai.configure(api_key="AIzaSyA1VgJaj0VW6E9tV5cITXGxmBRUPDLEddc")
+genai.configure(api_key="YOUR API KEY HERE")
 model = genai.GenerativeModel('gemini-pro')
 expected_text = model.generate_content("Generate only a random 2-3 line text to test a dyslexic person's listening ability").text
 
