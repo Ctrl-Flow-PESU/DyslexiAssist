@@ -46,7 +46,7 @@ Ensure you have the following installed:
 - **[Rithvik A M](https://github.com/Rithvik2006)**
 - **[Chatresh Ramasai Gudi](https://github.com/ChatreshGudi)** 
 - **[Arvind Kothamangala](https://github.com/Nightly1177)**
-- **Aamer Khan**
+- **[Aamer Khan](https://github.com/aamer236)**
 
 ## License
 This project is open-source and available under the MIT License.
