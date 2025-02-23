@@ -35,7 +35,7 @@ report it to both us and the maintainers of the affected library.
 ## License and Liability
 By using this project, you acknowledge that it is provided as-is, without any warranty. Users are responsible for securing their environments and data.
 
-For any questions related to security, contact us **[Rithvik A M](rithvikam2006@gmail.com), [Chatresh Ramasai Gudi](chatreshrsg0202@gmail.com), [Aamer Khan](aamerkhanrz@gmail.com),
+For any questions related to security, contact **[Rithvik A M](rithvikam2006@gmail.com), [Chatresh Ramasai Gudi](chatreshrsg0202@gmail.com), [Aamer Khan](aamerkhanrz@gmail.com),
 or [Arvind Kothamangala](arvindkothamangala@gmail.com)**..
 
 ---
