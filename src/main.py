@@ -5,6 +5,7 @@ import speech_recognition as sr  # Import the speech recognition library
 import pyttsx3  # Import the text-to-speech library
 import json
 import google.generativeai as genai
+from services.voice_assistant import VoiceAssistant
 
 from ui.components import Slider, TextBox, draw_button
 from ui.text_utils import wrap_text
@@ -22,6 +23,7 @@ DARK_BUTTON_COLOR = (70, 130, 180)  # Steel blue
 BACK_BUTTON_COLOR = (100, 149, 237) # Cornflower blue
 TEXT_COLOR = (0, 0, 0)              # Black
 WHITE = (255, 255, 255)             # White
+VOICE_INDICATOR_COLOR = (0, 255, 0)  # Green
 
 
 def dictate_text_to_student(text, speed):
@@ -51,7 +53,7 @@ def check_accuracy(user_input, expected_text):
     
     try:
         # Configure the Gemini API
-        genai.configure(api_key="YOUR API KEY HERE")
+        genai.configure(api_key="AIzaSyA1VgJaj0VW6E9tV5cITXGxmBRUPDLEddc")
 
         # Set up the model
         model = genai.GenerativeModel('gemini-pro')
@@ -134,11 +136,13 @@ def draw_back_button(screen, button_font, button_width, button_height):
                 button_color, text_color, border_radius=5)
     return back_button  # Return the rect for click detection
 
-genai.configure(api_key="YOUR API KEY HERE")
+genai.configure(api_key="AIzaSyA1VgJaj0VW6E9tV5cITXGxmBRUPDLEddc")
 model = genai.GenerativeModel('gemini-pro')
 expected_text = model.generate_content("Generate only a random 2-3 line text to test a dyslexic person's listening ability").text
 
-# expected_text = "The quick brown fox"
+voice_assistant = VoiceAssistant()
+voice_assistant.start_listening()
+voice_assistant.speak("Welcome to Dyslexia Assistant. Say 'help' for available commands.")
 
 def main():
     global BACKGROUND_COLOR, TEXT_COLOR
@@ -259,6 +263,7 @@ def main():
         # Handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                voice_assistant.stop_listening()
                 pygame.quit()
                 sys.exit()
 
@@ -628,6 +633,37 @@ def main():
                             elif menu_button.collidepoint(mouse_pos):
                                 state = "menu"
 
+        # Process voice commands
+        try:
+            voice_command = voice_assistant.get_command()
+            if voice_command:
+                print(f"Processing command: {voice_command}")  # Debug print
+                if voice_command == "menu":
+                    state = "menu"
+                    active_menu = None
+                    voice_assistant.speak("Returning to main menu")
+                elif voice_command == "reading_test":
+                    state = "level_1"
+                    voice_assistant.speak("Starting reading test")
+                elif voice_command == "dictation":
+                    state = "dictation_test"
+                    voice_assistant.speak("Starting dictation test")
+                elif voice_command == "contrast":
+                    state = "contrast_test"
+                    voice_assistant.speak("Starting contrast test")
+                elif voice_command == "help":
+                    voice_assistant.provide_help()
+                elif voice_command == "open_text_file":
+                    opened_text = open_text_file()
+                    state = "display_text"
+                    voice_assistant.speak("Opening text file")
+                elif voice_command == "read_aloud" and state in ["level_1", "level_2", "level_3"]:
+                    level_num = state.split("_")[1]
+                    current_text = reading_texts[f"Level {level_num}"][0]
+                    voice_assistant.speak(current_text["text"])
+        except Exception as e:
+            print(f"Error processing voice command: {e}")
+
         # Draw screen
         screen.fill(BACKGROUND_COLOR)
         
@@ -956,6 +992,11 @@ def main():
                 scroll_bar_rect = pygame.Rect(container_rect.right + 10, container_rect.top + scroll_bar_pos, 
                                             10, scroll_bar_height)
                 pygame.draw.rect(screen, DARK_BUTTON_COLOR, scroll_bar_rect)
+        # Draw voice command indicator
+        if voice_assistant.is_listening:
+            indicator_radius = 10
+            pygame.draw.circle(screen, VOICE_INDICATOR_COLOR, 
+                              (window_width - 20, 20), indicator_radius)
         clock.tick(60)
         pygame.display.flip()
 
