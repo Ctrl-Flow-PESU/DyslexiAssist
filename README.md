@@ -16,11 +16,10 @@ AI For Dyslexia is an AI-powered tool designed to assist individuals with dyslex
 ### Prerequisites
 Ensure you have the following installed:
 - Python 3.x
-- OpenCV
-- NumPy
-- Matplotlib
-- LanguageTool API
-- OpenAI's GPT API (for AI-based text corrections and summarization)
+- pyttsx3
+- speech_recongition
+- Google Cloud Vision API
+- Gemini API (for AI-based text corrections and summarization)
 
 ### Setup
 1. Clone the repository:

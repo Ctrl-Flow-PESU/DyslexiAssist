@@ -1,6 +1,5 @@
 import time
 import random
-import pygame
 
 class ContrastTester:
     def __init__(self, window_width, window_height):
