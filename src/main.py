@@ -56,7 +56,7 @@ def check_accuracy(user_input, expected_text):
         genai.configure(api_key="AIzaSyA1VgJaj0VW6E9tV5cITXGxmBRUPDLEddc")
 
         # Set up the model
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         
         # Construct prompt for analysis
         prompt = f"""
@@ -136,9 +136,20 @@ def draw_back_button(screen, button_font, button_width, button_height):
                 button_color, text_color, border_radius=5)
     return back_button  # Return the rect for click detection
 
-genai.configure(api_key="AIzaSyA1VgJaj0VW6E9tV5cITXGxmBRUPDLEddc")
-model = genai.GenerativeModel('gemini-pro')
-expected_text = model.generate_content("Generate only a random 2-3 line text to test a dyslexic person's listening ability").text
+def generate_dictation_text():
+    """Generate a new random text for dictation test"""
+    try:
+        genai.configure(api_key="AIzaSyCtuJn4GVM2Ysfu9aUJiRnffVGEOet1Zjc")  # Replace with your API key
+        model = genai.GenerativeModel('gemini-2.0-flash')  # Changed from gemini-2.0-flash
+        
+        prompt = """Generate a short 2-3 line text suitable for testing dyslexic person's listening and writing ability. 
+        The text should be simple, clear, and use common words. Don't include any special characters or numbers."""
+        
+        response = model.generate_content(prompt)
+        return response.text if response.text else "The cat sat on the mat. It was a sunny day. The birds flew in the sky."
+    except Exception as e:
+        print(f"Error generating dictation text: {e}")
+        return "The cat sat on the mat. It was a sunny day. The birds flew in the sky."
 
 voice_assistant = VoiceAssistant()
 voice_assistant.start_listening()
@@ -147,6 +158,9 @@ voice_assistant.speak("Welcome to Dyslexia Assistant. Say 'help' for available c
 def main():
     global BACKGROUND_COLOR, TEXT_COLOR
     pygame.init()
+    
+    # Add scroll_y initialization here
+    scroll_y = 0  # Initialize scroll position
     
     # Get the display info to set appropriate window size
     display_info = pygame.display.Info()
@@ -282,6 +296,8 @@ def main():
                     if back_button.collidepoint(mouse_pos):
                         state = "menu"
                         active_menu = None
+                        if hasattr(text_box, 'expected_text'):
+                            delattr(text_box, 'expected_text')  # Clear the stored text when leaving
                         continue
 
                 if state == "menu":
@@ -334,6 +350,12 @@ def main():
                         reader.read_text(current_text["text"], rate=int(voice_speed_slider.get_value()))
 
                 elif state == "dictation_test":
+                    # Generate new text when entering the state
+                    if not hasattr(text_box, 'expected_text'):
+                        text_box.expected_text = generate_dictation_text()
+                        text_box.show_results = False
+                        text_box.text = ""  # Clear previous input
+
                     # Draw title
                     title_text = title_font.render("Dictation Test", True, TEXT_COLOR)
                     title_rect = title_text.get_rect(center=(window_width//2, TITLE_MARGIN))
@@ -356,6 +378,17 @@ def main():
                     draw_button(screen, check_button, "Check", button_font, 
                               DARK_BUTTON_COLOR, WHITE, border_radius=5)
                     
+                    # Handle button clicks
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if dictate_button.collidepoint(event.pos):
+                            # Use text-to-speech to read the expected text
+                            reader.read_text(text_box.expected_text, rate=int(voice_speed_slider.get_value()))
+                        elif check_button.collidepoint(event.pos):
+                            # Check accuracy when check button is clicked
+                            is_correct, feedback = check_accuracy(text_box.text, text_box.expected_text)
+                            text_box.show_results = True
+                            text_box.result_text = feedback
+                    
                     # Move text box higher (position it closer to the buttons)
                     text_box_y = button_y + button_height//2 + 20  # 20px gap after buttons
                     text_box.rect.y = text_box_y
@@ -363,14 +396,12 @@ def main():
                     
                     # Draw results if they exist
                     if hasattr(text_box, 'show_results') and text_box.show_results:
-                        # Start feedback section closer to text box
-                        feedback_start_y = text_box.rect.bottom + 20  # Reduced gap
+                        feedback_start_y = text_box.rect.bottom + 20
                         
-                        # Draw expected text
                         expected_label = text_font.render("Expected Text:", True, TEXT_COLOR)
                         screen.blit(expected_label, (window_width//4, feedback_start_y))
                         
-                        wrapped_expected = wrap_text(expected_text, text_font, window_width//2)
+                        wrapped_expected = wrap_text(text_box.expected_text, text_font, window_width//2)
                         for i, line in enumerate(wrapped_expected):
                             expected_surface = text_font.render(line, True, DARK_BUTTON_COLOR)
                             expected_rect = expected_surface.get_rect(
@@ -393,25 +424,6 @@ def main():
                                     y=feedback_y + 30 + (i * 25)  # Reduced line spacing
                                 )
                                 screen.blit(result_surface, result_rect)
-
-                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click only
-                        mouse_pos = event.pos
-                        if dictate_button.collidepoint(mouse_pos):
-                            dictate_flag = True
-                            dictate_text_to_student(expected_text, voice_speed_slider.get_value())
-                        if check_button.collidepoint(mouse_pos):
-                            # Check accuracy of typed text
-                            if text_box.text:
-                                text_box.result_text = "Analyzing..."
-                                text_box.show_results = True  # Add this flag to show results
-                                pygame.display.flip()  # Update display to show loading
-                                
-                                is_correct, feedback = check_accuracy(text_box.text, expected_text)
-                                text_box.result_text = feedback
-                            else:
-                                text_box.result_text = "Please enter some text before checking."
-                                feedback = check_accuracy(text_box.text, expected_text)[1]
-                                text_box.result_text = feedback
 
                 elif state == "notes_proofreading":
                     upload_button = pygame.Rect((window_width - button_width)//2, menu_start_y + menu_spacing, 
@@ -654,7 +666,8 @@ def main():
                 elif voice_command == "help":
                     voice_assistant.provide_help()
                 elif voice_command == "open_text_file":
-                    opened_text = open_text_file()
+                    opened_file = open(open_text_file())
+                    opened_text = opened_file.read()
                     state = "display_text"
                     voice_assistant.speak("Opening text file")
                 elif voice_command == "read_aloud" and state in ["level_1", "level_2", "level_3"]:
@@ -680,6 +693,8 @@ def main():
                 if back_button.collidepoint(event.pos):
                     state = "menu"
                     active_menu = None
+                    if hasattr(text_box, 'expected_text'):
+                        delattr(text_box, 'expected_text')  # Clear the stored text when leaving
                     continue
 
         # Draw state-specific content
@@ -766,6 +781,12 @@ def main():
                           DARK_BUTTON_COLOR, WHITE, border_radius=5)
 
             elif state == "dictation_test":
+                # Generate new text when entering the state
+                if not hasattr(text_box, 'expected_text'):
+                    text_box.expected_text = generate_dictation_text()
+                    text_box.show_results = False
+                    text_box.text = ""  # Clear previous input
+
                 # Draw title
                 title_text = title_font.render("Dictation Test", True, TEXT_COLOR)
                 title_rect = title_text.get_rect(center=(window_width//2, TITLE_MARGIN))
@@ -795,14 +816,12 @@ def main():
                 
                 # Draw results if they exist
                 if hasattr(text_box, 'show_results') and text_box.show_results:
-                    # Start feedback section closer to text box
-                    feedback_start_y = text_box.rect.bottom + 20  # Reduced gap
+                    feedback_start_y = text_box.rect.bottom + 20
                     
-                    # Draw expected text
                     expected_label = text_font.render("Expected Text:", True, TEXT_COLOR)
                     screen.blit(expected_label, (window_width//4, feedback_start_y))
                     
-                    wrapped_expected = wrap_text(expected_text, text_font, window_width//2)
+                    wrapped_expected = wrap_text(text_box.expected_text, text_font, window_width//2)
                     for i, line in enumerate(wrapped_expected):
                         expected_surface = text_font.render(line, True, DARK_BUTTON_COLOR)
                         expected_rect = expected_surface.get_rect(

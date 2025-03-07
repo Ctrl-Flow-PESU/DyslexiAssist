@@ -121,27 +121,30 @@ class LevelButton:
         # Colors
         base_color = (65, 105, 225) if self.is_pressed else (100, 149, 237) if self.hover else (173, 216, 230)
         
-        # Draw shadow
-        shadow_rect = self.rect.copy()
-        shadow_rect.x += 2
-        shadow_rect.y += 2
-        pygame.draw.rect(screen, (100, 100, 100, 128), shadow_rect, border_radius=10)
+        # Create button surface
+        button_surface = pygame.Surface(self.rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(button_surface, (*base_color, 255), button_surface.get_rect(), 
+                        border_radius=10)
         
-        # Draw main button with gradient
-        gradient_rect = pygame.Surface(self.rect.size, pygame.SRCALPHA)
-        pygame.draw.rect(gradient_rect, (*base_color, 255), gradient_rect.get_rect(), border_radius=10)
-        screen.blit(gradient_rect, self.rect)
+        # Create and draw blurred shadow
+        shadow = create_blurred_shadow(button_surface)
+        shadow.fill((100, 100, 100, 128), special_flags=pygame.BLEND_RGBA_MULT)
+        shadow_rect = shadow.get_rect(center=(self.rect.centerx + 2, self.rect.centery + 2))
+        screen.blit(shadow, shadow_rect)
         
-        # Draw text with shadow
+        # Draw main button
+        screen.blit(button_surface, self.rect)
+        
+        # Draw text with blurred shadow
         shadow_surface = self.font.render(self.text, True, (100, 100, 100))
+        text_shadow = create_blurred_shadow(shadow_surface, blur_radius=2)
+        shadow_rect = text_shadow.get_rect(center=(self.rect.centerx + 1, 
+                                                 self.rect.centery + 1))
+        screen.blit(text_shadow, shadow_rect)
+        
+        # Draw main text
         text_surface = self.font.render(self.text, True, (0, 0, 0))
-        
-        # Position text
         text_rect = text_surface.get_rect(center=self.rect.center)
-        shadow_rect = shadow_surface.get_rect(center=(self.rect.centerx + 1, self.rect.centery + 1))
-        
-        # Draw text shadow and main text
-        screen.blit(shadow_surface, shadow_rect)
         screen.blit(text_surface, text_rect)
 
 def draw_button(screen, rect, text, font, button_color, text_color, border_radius=10, shadow_offset=2):
@@ -194,4 +197,4 @@ def wrap_text(text, font, max_width):
             current_width = word_width
     if current_line:
         lines.append(' '.join(current_line))
-    return lines 
+    return lines
