@@ -25,6 +25,8 @@ TEXT_COLOR = (0, 0, 0)              # Black
 WHITE = (255, 255, 255)             # White
 VOICE_INDICATOR_COLOR = (0, 255, 0)  # Green
 
+genai.configure(api_key="AIzaSyCtuJn4GVM2Ysfu9aUJiRnffVGEOet1Zjc")  # Replace with your API key
+model = genai.GenerativeModel('gemini-2.0-flash')  # Changed from gemini-2.0-flash
 
 def dictate_text_to_student(text, speed):
     """
@@ -51,44 +53,25 @@ def check_accuracy(user_input, expected_text):
     if user_input.strip().lower() == expected_text.strip().lower():
         return True, "Perfect match! Well done!"
     
+    # Construct prompt for analysis
+    prompt = f"""You are a JSON-only response API. Analyze these texts and respond with ONLY valid JSON:
+    Expected text: "{expected_text}"
+    User input: "{user_input}"
+    
+    Format: {{"is_correct": boolean, "feedback": "analysis of spelling, grammar, and word differences"}}"""
+    
+    # Get AI analysis
+    response = model.generate_content(prompt)
+    response_text = response.text.strip()
+    
+    # Clean the response to ensure it's valid JSON
+    response_text = response_text.replace("```json", "").replace("```", "").strip()
+    
     try:
-        # Configure the Gemini API
-        genai.configure(api_key="AIzaSyA1VgJaj0VW6E9tV5cITXGxmBRUPDLEddc")
-
-        # Set up the model
-        model = genai.GenerativeModel('gemini-2.0-flash')
-        
-        # Construct prompt for analysis
-        prompt = f"""
-        Compare these two texts and analyze spelling and grammar differences:
-        Expected text: "{expected_text}"
-        User input: "{user_input}"
-        
-        Provide a brief analysis of:
-        1. Spelling mistakes
-        2. Grammar errors
-        3. Missing or extra words
-        
-        Return your response in this exact JSON format:
-        {{
-            "is_correct": false,
-            "feedback": "detailed feedback here"
-        }}
-        
-        Only return the JSON, nothing else.
-        """
-        
-        # Get AI analysis
-        response = model.generate_content(prompt)
-        
-        # Parse response
-        result = json.loads(response.text)
+        result = json.loads(response_text)
         return result["is_correct"], result["feedback"]
-        
-    except Exception as e:
-        print(f"Error in Gemini analysis: {e}")
-        # Fallback to basic comparison if AI fails
-        return False, "Could not perform detailed analysis. Please try again."
+    except json.JSONDecodeError:
+        return False, f"Comparison failed. Expected: '{expected_text}', Got: '{user_input}'"
 
 def upload_image():
     # Use tkinter for file dialog
@@ -138,12 +121,9 @@ def draw_back_button(screen, button_font, button_width, button_height):
 
 def generate_dictation_text():
     """Generate a new random text for dictation test"""
-    try:
-        genai.configure(api_key="AIzaSyCtuJn4GVM2Ysfu9aUJiRnffVGEOet1Zjc")  # Replace with your API key
-        model = genai.GenerativeModel('gemini-2.0-flash')  # Changed from gemini-2.0-flash
-        
-        prompt = """Generate a short 2-3 line text suitable for testing dyslexic person's listening and writing ability. 
-        The text should be simple, clear, and use common words. Don't include any special characters or numbers."""
+    try:        
+        prompt = """Generate a single short 1 line text suitable for testing dyslexic person's listening and writing ability. 
+        The text should be simple, clear, and use common words. Don't include any special characters or numbers or anything else, just the text."""
         
         response = model.generate_content(prompt)
         return response.text if response.text else "The cat sat on the mat. It was a sunny day. The birds flew in the sky."
@@ -151,6 +131,33 @@ def generate_dictation_text():
         print(f"Error generating dictation text: {e}")
         return "The cat sat on the mat. It was a sunny day. The birds flew in the sky."
 
+def generate_reading_texts():
+        try:            
+            reading_texts = {}
+            
+            # Generate texts for each level
+            for level in range(1, 4):
+                prompt = f"""Generate a small reading passage (maximum 6 lines) for level {level} dyslexic readers.
+                Level 1 should be very simple sentences.
+                Level 2 should be medium difficulty with compound sentences.
+                Level 3 should be more complex sentences.
+                Keep the text natural and engaging.
+                Return ONLY the text passage(No, formatting required, just the text.). Generate only level {level} text."""
+                
+                response = model.generate_content(prompt)
+                reading_texts[f"Level {level}"] = [{"text": response.text.strip()}]
+                
+            return reading_texts
+        except Exception as e:
+            print(f"Error generating reading texts: {e}")
+            # Fallback texts if generation fails
+            return {
+                "Level 1": [{"text": "The cat sat on the mat. It was a sunny day. The birds flew in the sky."}],
+                "Level 2": [{"text": "Sarah loved to read books. She would visit the library on weekends. Her favorite books were about adventures."}], 
+                "Level 3": [{"text": "The quick brown fox jumps over the lazy dog. A skilled reader can understand complex sentences."}]
+            }
+
+reading_texts = generate_reading_texts()        
 voice_assistant = VoiceAssistant()
 voice_assistant.start_listening()
 voice_assistant.speak("Welcome to Dyslexia Assistant. Say 'help' for available commands.")
@@ -239,23 +246,9 @@ def main():
     text_box = TextBox(100, 500, window_width - 200, 100, textbox_font)
 
     # Reading test content
-    reading_texts = {
-        "Level 1": [
-            {
-                "text": "The cat sat on the mat. It was a sunny day. The birds flew in the sky."
-            }
-        ],
-        "Level 2": [
-            {
-                "text": "Sarah loved to read books. Every weekend, she would visit the library and borrow new stories. Her favorite books were about magical adventures."
-            }
-        ],
-        "Level 3": [
-            {
-                "text": "The quick brown fox jumps over the lazy dog. A fast reader can understand this text quickly."
-            }
-        ]
-    }
+    # Generate reading texts using Gemini
+            
+    # reading_texts = generate_reading_texts()
 
     # Add contrast tester
     contrast_tester = ContrastTester(window_width, window_height)
