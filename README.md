@@ -44,7 +44,7 @@ Ensure you have the following installed:
 ## Contributors
 - **[Rithvik A M](https://github.com/Rithvik2006)**
 - **[Chatresh Ramasai Gudi](https://github.com/ChatreshGudi)** 
-- **[Arvind Kothamangala](https://github.com/Nightly1177)**
+- **[Arvind Kothamangala](https://github.com/arvind-kotha)**
 - **[Aamer Khan](https://github.com/aamer236)**
 
 ## License
