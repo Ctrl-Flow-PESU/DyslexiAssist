@@ -15,6 +15,7 @@ from assistant import DyslexiaAssistant
 from services.contrast_tester import ContrastTester
 import tkinter as tk
 from tkinter import filedialog
+import threading
 
 # Define colors as global variables
 BACKGROUND_COLOR = (245, 245, 220)  # Beige
@@ -206,6 +207,10 @@ def main():
     reader = TextReader()
     assistant = DyslexiaAssistant("AIzaSyA1VgJaj0VW6E9tV5cITXGxmBRUPDLEddc")
 
+    # Initialize services
+    reader = TextReader()
+    assistant = DyslexiaAssistant("AIzaSyA1VgJaj0VW6E9tV5cITXGxmBRUPDLEddc")
+
     # Application state and options
     state = "menu"
     main_options = [
@@ -258,7 +263,7 @@ def main():
         # Update font sizes based on slider
         base_size = int(text_size_slider.get_value())
         try:
-            dyslexic_font_path = r"C:\Users\Gudic\Desktop\Dyslexia_Main\opendyslexic-0.91.12\opendyslexic-0.91.12\compiled\OpenDyslexic-Regular.otf"
+            dyslexic_font_path = r".\opendyslexic-0.91.12\opendyslexic-0.91.12\compiled\OpenDyslexic-Regular.otf"
             title_font = pygame.font.Font(dyslexic_font_path, base_size + 16)
             button_font = pygame.font.Font(dyslexic_font_path, base_size + 8)
             text_font = pygame.font.Font(dyslexic_font_path, base_size)
@@ -367,15 +372,16 @@ def main():
                     
                     # Draw buttons
                     draw_button(screen, dictate_button, "Dictate", button_font, 
-                              DARK_BUTTON_COLOR, WHITE, border_radius=5)
+                                DARK_BUTTON_COLOR, WHITE, border_radius=5)
                     draw_button(screen, check_button, "Check", button_font, 
-                              DARK_BUTTON_COLOR, WHITE, border_radius=5)
+                                DARK_BUTTON_COLOR, WHITE, border_radius=5)
                     
-                    # Handle button clicks
+                    # Handle button clicks in a way that doesn't interfere with typing
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if dictate_button.collidepoint(event.pos):
-                            # Use text-to-speech to read the expected text
-                            reader.read_text(text_box.expected_text, rate=int(voice_speed_slider.get_value()))
+                            # Use text-to-speech in a non-blocking way
+                            threading.Thread(target=reader.read_text, 
+                                           args=(text_box.expected_text, int(voice_speed_slider.get_value()))).start()
                         elif check_button.collidepoint(event.pos):
                             # Check accuracy when check button is clicked
                             is_correct, feedback = check_accuracy(text_box.text, text_box.expected_text)
@@ -386,37 +392,6 @@ def main():
                     text_box_y = button_y + button_height//2 + 20  # 20px gap after buttons
                     text_box.rect.y = text_box_y
                     text_box.draw(screen)
-                    
-                    # Draw results if they exist
-                    if hasattr(text_box, 'show_results') and text_box.show_results:
-                        feedback_start_y = text_box.rect.bottom + 20
-                        
-                        expected_label = text_font.render("Expected Text:", True, TEXT_COLOR)
-                        screen.blit(expected_label, (window_width//4, feedback_start_y))
-                        
-                        wrapped_expected = wrap_text(text_box.expected_text, text_font, window_width//2)
-                        for i, line in enumerate(wrapped_expected):
-                            expected_surface = text_font.render(line, True, DARK_BUTTON_COLOR)
-                            expected_rect = expected_surface.get_rect(
-                                x=window_width//4,
-                                y=feedback_start_y + 30 + (i * 25)  # Reduced line spacing
-                            )
-                            screen.blit(expected_surface, expected_rect)
-                        
-                        # Draw feedback closer to expected text
-                        if hasattr(text_box, 'result_text'):
-                            feedback_y = feedback_start_y + (len(wrapped_expected) * 25) + 40
-                            feedback_label = text_font.render("Analysis:", True, TEXT_COLOR)
-                            screen.blit(feedback_label, (window_width//4, feedback_y))
-                            
-                            wrapped_feedback = wrap_text(text_box.result_text, text_font, window_width//2)
-                            for i, line in enumerate(wrapped_feedback):
-                                result_surface = text_font.render(line, True, TEXT_COLOR)
-                                result_rect = result_surface.get_rect(
-                                    x=window_width//4,
-                                    y=feedback_y + 30 + (i * 25)  # Reduced line spacing
-                                )
-                                screen.blit(result_surface, result_rect)
 
                 elif state == "notes_proofreading":
                     upload_button = pygame.Rect((window_width - button_width)//2, menu_start_y + menu_spacing, 
@@ -555,14 +530,14 @@ def main():
                         text_rect = text_surface.get_rect(center=(center_x, center_y - 100))
                         screen.blit(text_surface, text_rect)
                         
-                        # Draw rating buttons
+                        # Update the button spacing and positioning in the contrast test section
                         button_y = center_y + 50
                         button_width = 120
-                        button_spacing = 40
+                        button_spacing = 80  # Increased from 40 to 80 pixels
                         total_width = (button_width * 3) + (button_spacing * 2)
                         start_x = center_x - (total_width // 2)
-                        
-                        # Create rating buttons
+
+                        # Create rating buttons with increased spacing
                         difficult_button = pygame.Rect(start_x, button_y, button_width, 40)
                         neutral_button = pygame.Rect(start_x + button_width + button_spacing, button_y, button_width, 40)
                         easy_button = pygame.Rect(start_x + (button_width + button_spacing) * 2, button_y, button_width, 40)
@@ -621,8 +596,10 @@ def main():
                         
                         # Draw "Apply Settings" and "Back to Menu" buttons
                         button_y = window_height - 100
-                        apply_button = pygame.Rect(center_x - 250, button_y, 200, 50)
-                        menu_button = pygame.Rect(center_x + 50, button_y, 200, 50)
+                        button_width = 200
+                        button_spacing = 100  # Increased spacing between buttons
+                        apply_button = pygame.Rect(center_x - (button_width + button_spacing), button_y, button_width, 50)
+                        menu_button = pygame.Rect(center_x + button_spacing, button_y, button_width, 50)
                         
                         draw_button(screen, apply_button, "Apply Settings", button_font,
                                   DARK_BUTTON_COLOR, WHITE, border_radius=5)
@@ -802,6 +779,18 @@ def main():
                 draw_button(screen, check_button, "Check", button_font, 
                           DARK_BUTTON_COLOR, WHITE, border_radius=5)
                 
+                # Handle button clicks in a way that doesn't interfere with typing
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if dictate_button.collidepoint(event.pos):
+                        # Use text-to-speech in a non-blocking way
+                        threading.Thread(target=reader.read_text, 
+                                       args=(text_box.expected_text, int(voice_speed_slider.get_value()))).start()
+                    elif check_button.collidepoint(event.pos):
+                        # Check accuracy when check button is clicked
+                        is_correct, feedback = check_accuracy(text_box.text, text_box.expected_text)
+                        text_box.show_results = True
+                        text_box.result_text = feedback
+                
                 # Move text box higher (position it closer to the buttons)
                 text_box_y = button_y + button_height//2 + 20  # 20px gap after buttons
                 text_box.rect.y = text_box_y
@@ -887,14 +876,14 @@ def main():
                     text_rect = text_surface.get_rect(center=(center_x, center_y - 100))
                     screen.blit(text_surface, text_rect)
                     
-                    # Draw rating buttons
+                    # Update the button spacing and positioning in the contrast test section
                     button_y = center_y + 50
                     button_width = 120
-                    button_spacing = 40
+                    button_spacing = 80  # Increased from 40 to 80 pixels
                     total_width = (button_width * 3) + (button_spacing * 2)
                     start_x = center_x - (total_width // 2)
-                    
-                    # Create rating buttons
+
+                    # Create rating buttons with increased spacing
                     difficult_button = pygame.Rect(start_x, button_y, button_width, 40)
                     neutral_button = pygame.Rect(start_x + button_width + button_spacing, button_y, button_width, 40)
                     easy_button = pygame.Rect(start_x + (button_width + button_spacing) * 2, button_y, button_width, 40)
@@ -938,8 +927,10 @@ def main():
                     
                     # Draw "Apply Settings" and "Back to Menu" buttons
                     button_y = window_height - 100
-                    apply_button = pygame.Rect(center_x - 250, button_y, 200, 50)
-                    menu_button = pygame.Rect(center_x + 50, button_y, 200, 50)
+                    button_width = 200
+                    button_spacing = 100  # Increased spacing between buttons
+                    apply_button = pygame.Rect(center_x - (button_width + button_spacing), button_y, button_width, 50)
+                    menu_button = pygame.Rect(center_x + button_spacing, button_y, button_width, 50)
                     
                     draw_button(screen, apply_button, "Apply Settings", button_font,
                               DARK_BUTTON_COLOR, WHITE, border_radius=5)
