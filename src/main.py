@@ -25,8 +25,9 @@ BACK_BUTTON_COLOR = (100, 149, 237) # Cornflower blue
 TEXT_COLOR = (0, 0, 0)              # Black
 WHITE = (255, 255, 255)             # White
 VOICE_INDICATOR_COLOR = (0, 255, 0)  # Green
+API_KEY = "AIzaSyCtuJn4GVM2Ysfu9aUJiRnffVGEOet1Zjc"
 
-genai.configure(api_key="AIzaSyCtuJn4GVM2Ysfu9aUJiRnffVGEOet1Zjc")  # Replace with your API key
+genai.configure(api_key=API_KEY)  # Replace with your API key
 model = genai.GenerativeModel('gemini-2.0-flash')  # Changed from gemini-2.0-flash
 
 def dictate_text_to_student(text, speed):
@@ -379,6 +380,9 @@ def main():
                     # Handle button clicks in a way that doesn't interfere with typing
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if dictate_button.collidepoint(event.pos):
+                            # Generate new text when dictate is clicked
+                            text_box.expected_text = generate_dictation_text()
+                            text_box.show_results = False
                             # Use text-to-speech in a non-blocking way
                             threading.Thread(target=reader.read_text, 
                                            args=(text_box.expected_text, int(voice_speed_slider.get_value()))).start()
@@ -474,7 +478,14 @@ def main():
                                                 10, scroll_bar_height)
                     pygame.draw.rect(screen, DARK_BUTTON_COLOR, scroll_bar_rect)
 
-                    # Handle scrolling
+# Handle scrolling
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.button == 4:  # Scroll up
+                            scroll_y = max(scroll_y - 30, 0)
+                        elif event.button == 5:  # Scroll down
+                            scroll_y = min(scroll_y + 30, text_container.get_height() - text_area_height)
+
+# Handle scrolling
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 4:  # Scroll up
                             scroll_y = max(scroll_y - 30, 0)
@@ -782,6 +793,9 @@ def main():
                 # Handle button clicks in a way that doesn't interfere with typing
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if dictate_button.collidepoint(event.pos):
+                        # Generate new text when dictate is clicked
+                        text_box.expected_text = generate_dictation_text()
+                        text_box.show_results = False
                         # Use text-to-speech in a non-blocking way
                         threading.Thread(target=reader.read_text, 
                                        args=(text_box.expected_text, int(voice_speed_slider.get_value()))).start()
