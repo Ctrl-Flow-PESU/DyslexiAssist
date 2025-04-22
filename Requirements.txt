@@ -1,3 +1,19 @@
+# Core dependencies
+python-dotenv>=0.19.0
+
+# GUI and Interface
+pygame
+
+# Text-to-Speech
+pyttsx3>=2.90
+
+# Audio Processing
+pyaudio>=0.2.11
+SpeechRecognition>=3.8.1
+
+# Optional - OCR capabilities
+pytesseract>=0.3.8
+opencv-python>=4.5.3
 pyttsx3>=2.90
 SpeechRecognition>=3.10.0
 google-cloud-vision>=3.4.4
