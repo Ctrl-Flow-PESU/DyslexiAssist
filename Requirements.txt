@@ -1,6 +1,11 @@
 # GUI and Interface
 pygame>=2.5.0
 
+# API Framework
+flask>=3.0.0
+flask-cors>=4.0.0
+python-dotenv>=1.0.0
+
 # Text-to-Speech
 pyttsx3>=2.90
 
@@ -8,9 +13,11 @@ pyttsx3>=2.90
 pyaudio>=0.2.11
 SpeechRecognition>=3.8.1
 
+# AI and Machine Learning
+google-generativeai>=0.3.0
+google-cloud-vision>=3.4.4
+
 # Additional Utils
 numpy>=1.24.0
-
-# AI and Machine Learning
-google-generativeai
-google-cloud-vision
+pillow>=10.0.0
+requests>=2.31.0
