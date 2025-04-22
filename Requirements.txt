@@ -14,12 +14,3 @@ SpeechRecognition>=3.8.1
 # Optional - OCR capabilities
 pytesseract>=0.3.8
 opencv-python>=4.5.3
-pyttsx3>=2.90
-SpeechRecognition>=3.10.0
-google-cloud-vision>=3.4.4
-python-dotenv>=1.0.0
-opencv-python>=4.8.0
-matplotlib>=3.7.1
-langdetect>=1.0.9
-google-generativeai>=0.2.0
-pygame
