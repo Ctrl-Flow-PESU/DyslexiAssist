@@ -59,8 +59,8 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --background: 255, 248, 229;
+  --foreground: 0, 0, 0;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
@@ -126,11 +126,21 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s, color 0.3s;
   }
+}
+
+.card {
+  @apply bg-white/90 backdrop-blur-sm;
+  transition: background-color 0.3s;
 }

@@ -2,8 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu";
-import Image from "next/image";
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from "@/components/ui/navigation-menu";
 import Link from "next/link";
 import { FileText, Eye, Headphones, FileEdit, FolderOpen } from "lucide-react";
 
@@ -42,51 +41,53 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen p-8">
-      <header className="mb-12">
-        <NavigationMenu className="justify-between max-w-screen-xl mx-auto">
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <h1 className="text-3xl font-bold">DyslexiAssist</h1>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 font-['OpenDyslexic']">
+      <div className="max-w-7xl mx-auto px-6">
+        <header className="py-12"> {/* Changed mb-8 to py-12 for more vertical spacing */}
+          <NavigationMenu className="w-full">
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <h1 className="text-3xl font-bold pt-4">DyslexiAssist</h1> {/* Added pt-4 for top padding */}
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </header>
 
-      <main className="max-w-screen-xl mx-auto">
-        <section className="mb-12 text-center">
-          <h2 className="text-4xl font-bold mb-4">AI-Powered Dyslexia Assistance</h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Enhance your reading and writing experience with our suite of AI-powered tools
-            designed specifically for individuals with dyslexia.
-          </p>
-        </section>
+        <main className="space-y-8">
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature) => (
+              <Card 
+                key={feature.title} 
+                className="transition-all duration-300 hover:border-primary/50"
+              >
+                <Link href={feature.href}>
+                  <CardHeader className="p-6">
+                    <div className="p-2.5 w-fit rounded-md bg-primary/5 mb-4">
+                      {feature.icon}
+                    </div>
+                    <CardTitle className="text-xl mb-3">{feature.title}</CardTitle>
+                    <CardDescription className="text-base leading-relaxed">
+                      {feature.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6 pt-0">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-base py-3"
+                    >
+                      Get Started →
+                    </Button>
+                  </CardContent>
+                </Link>
+              </Card>
+            ))}
+          </section>
+        </main>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature) => (
-            <Card key={feature.title} className="transition-transform hover:scale-[1.02]">
-              <Link href={feature.href}>
-                <CardHeader>
-                  <div className="mb-4 p-2 w-fit rounded-lg bg-primary/10">
-                    {feature.icon}
-                  </div>
-                  <CardTitle>{feature.title}</CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="ghost" className="w-full">
-                    Get Started →
-                  </Button>
-                </CardContent>
-              </Link>
-            </Card>
-          ))}
-        </section>
-      </main>
-
-      <footer className="mt-16 text-center text-muted-foreground">
-        <p>© 2024 DyslexiAssist. Making reading accessible for everyone.</p>
-      </footer>
+        <footer className="mt-12 text-center text-muted-foreground text-base">
+          <p>© 2025 DyslexiAssist. Making reading accessible for everyone.</p>
+        </footer>
+      </div>
     </div>
   );
 }
